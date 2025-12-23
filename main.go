@@ -6,12 +6,18 @@ import (
 )
 
 func main() {
+	const filePathRoot = "."
+	const port = "8080"
+
 	mux := http.NewServeMux()
 
-	// Set up a handler that always returns 404
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.NotFound(w, r)
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
 	})
+
+	mux.Handle("/app/", http.StripPrefix("/app/", http.FileServer(http.Dir(filePathRoot))))
 
 	server := &http.Server{
 		Addr:    ":8080",
