@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 func (cfg *apiConfig) handlerMetrics(w http.ResponseWriter, r *http.Request) {
@@ -37,34 +38,52 @@ func (cfg *apiConfig) handlerValidate(w http.ResponseWriter, r *http.Request) {
 		Body string `json:"body"`
 	}
 
-	type errorResponse struct {
-		Error string `json:"error"`
-	}
-
-	type validResponse struct {
-		Valid bool `json:"valid"`
-	}
-
 	decoder := json.NewDecoder(r.Body)
 	var params parameters
 	if err := decoder.Decode(&params); err != nil {
-		resp, _ := json.Marshal(errorResponse{Error: "Something went wrong"})
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write(resp)
+		respondWithError(w, http.StatusBadRequest, "Something went wrong")
 		return
 	}
 
 	if len(params.Body) > 140 {
-		resp, _ := json.Marshal(errorResponse{Error: "Chirp is too long"})
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write(resp)
+		respondWithError(w, http.StatusBadRequest, "Chirp is too long")
 		return
 	}
 
-	resp, _ := json.Marshal(validResponse{Valid: true})
+	cleanedBody := cleanChirp(params.Body)
+	respondWithJSON(w, http.StatusOK, map[string]string{"cleaned_body": cleanedBody})
+}
+
+func respondWithError(w http.ResponseWriter, code int, msg string) {
+	respondWithJSON(w, code, map[string]string{"error": msg})
+}
+
+func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) error {
+	response, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(resp)
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.WriteHeader(code)
+	w.Write(response)
+	return nil
+}
+
+func cleanChirp(body string) string {
+	badWords := map[string]struct{}{
+		"kerfuffle": {},
+		"sharbert":  {},
+		"fornax":    {},
+	}
+
+	words := strings.Split(body, " ")
+	for i, word := range words {
+		if _, ok := badWords[strings.ToLower(word)]; ok {
+			words[i] = "****"
+		}
+	}
+
+	return strings.Join(words, " ")
 }
