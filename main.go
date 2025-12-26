@@ -1,11 +1,24 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
+	"os"
+
+	"github.com/glebson1988/chirpy/internal/database"
+	_ "github.com/lib/pq"
 )
 
 func main() {
+	dbURL := os.Getenv("DB_URL")
+	db, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		log.Fatalf("Failed to connect to DB: %v", err)
+	}
+	dbQueries := database.New(db)
+	_ = dbQueries
+
 	const filePathRoot = "."
 	const port = "8080"
 
