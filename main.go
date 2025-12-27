@@ -7,22 +7,28 @@ import (
 	"os"
 
 	"github.com/glebson1988/chirpy/internal/database"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
 func main() {
+	_ = godotenv.Load()
+
 	dbURL := os.Getenv("DB_URL")
+	platform := os.Getenv("PLATFORM")
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to DB: %v", err)
 	}
 	dbQueries := database.New(db)
-	_ = dbQueries
 
 	const filePathRoot = "."
 	const port = "8080"
 
-	cfg := &apiConfig{}
+	cfg := &apiConfig{
+		db:       dbQueries,
+		platform: platform,
+	}
 
 	mux := http.NewServeMux()
 
@@ -30,6 +36,7 @@ func main() {
 	mux.HandleFunc("GET /admin/metrics", cfg.handlerMetrics)
 	mux.HandleFunc("POST /admin/reset", cfg.handlerReset)
 	mux.HandleFunc("POST /api/validate_chirp", cfg.handlerValidate)
+	mux.HandleFunc("POST /api/users", cfg.handlerCreateUser)
 
 	fileServer := http.FileServer(http.Dir(filePathRoot))
 	mux.Handle("/app/", http.StripPrefix("/app/", cfg.middlewareMetricsInc(fileServer)))
