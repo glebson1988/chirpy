@@ -35,7 +35,7 @@ func main() {
 	mux.HandleFunc("GET /api/healthz", cfg.handlerHealthz)
 	mux.HandleFunc("GET /admin/metrics", cfg.handlerMetrics)
 	mux.HandleFunc("POST /admin/reset", cfg.handlerReset)
-	mux.HandleFunc("POST /api/validate_chirp", cfg.handlerValidate)
+	mux.HandleFunc("POST /api/chirps", cfg.handlerCreateChirp)
 	mux.HandleFunc("POST /api/users", cfg.handlerCreateUser)
 
 	fileServer := http.FileServer(http.Dir(filePathRoot))

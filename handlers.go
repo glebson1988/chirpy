@@ -43,27 +43,6 @@ func (cfg *apiConfig) handlerHealthz(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("OK"))
 }
 
-func (cfg *apiConfig) handlerValidate(w http.ResponseWriter, r *http.Request) {
-	type parameters struct {
-		Body string `json:"body"`
-	}
-
-	decoder := json.NewDecoder(r.Body)
-	var params parameters
-	if err := decoder.Decode(&params); err != nil {
-		respondWithError(w, http.StatusBadRequest, "Something went wrong")
-		return
-	}
-
-	if len(params.Body) > 140 {
-		respondWithError(w, http.StatusBadRequest, "Chirp is too long")
-		return
-	}
-
-	cleanedBody := cleanChirp(params.Body)
-	respondWithJSON(w, http.StatusOK, map[string]string{"cleaned_body": cleanedBody})
-}
-
 func respondWithError(w http.ResponseWriter, code int, msg string) {
 	respondWithJSON(w, code, map[string]string{"error": msg})
 }
