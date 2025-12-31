@@ -16,6 +16,7 @@ func main() {
 
 	dbURL := os.Getenv("DB_URL")
 	platform := os.Getenv("PLATFORM")
+	bearerToken := os.Getenv("BEARER_TOKEN")
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to DB: %v", err)
@@ -26,8 +27,9 @@ func main() {
 	const port = "8080"
 
 	cfg := &apiConfig{
-		db:       dbQueries,
-		platform: platform,
+		db:          dbQueries,
+		platform:    platform,
+		tokenSecret: bearerToken,
 	}
 
 	mux := http.NewServeMux()
