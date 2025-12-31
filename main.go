@@ -30,6 +30,7 @@ func main() {
 		db:          dbQueries,
 		platform:    platform,
 		tokenSecret: bearerToken,
+		tokenStore:  dbQueries,
 	}
 
 	mux := http.NewServeMux()
@@ -40,6 +41,8 @@ func main() {
 	mux.HandleFunc("POST /admin/reset", cfg.handlerReset)
 	mux.HandleFunc("POST /api/chirps", cfg.handlerCreateChirp)
 	mux.HandleFunc("POST /api/login", cfg.handlerLogin)
+	mux.HandleFunc("POST /api/refresh", cfg.handlerRefresh)
+	mux.HandleFunc("POST /api/revoke", cfg.handlerRevoke)
 	mux.HandleFunc("POST /api/users", cfg.handlerCreateUser)
 	mux.HandleFunc("GET /api/chirps/{chirpID}", cfg.handlerGetChirp)
 

@@ -102,3 +102,20 @@ func TestGetBearerTokenMissingHeader(t *testing.T) {
 		t.Fatalf("GetBearerToken() expected error for missing header")
 	}
 }
+
+func TestMakeRefreshToken(t *testing.T) {
+	token, err := MakeRefreshToken()
+	if err != nil {
+		t.Fatalf("MakeRefreshToken() error = %v", err)
+	}
+	if len(token) != 64 {
+		t.Fatalf("MakeRefreshToken() got length %d, want 64", len(token))
+	}
+	for _, r := range token {
+		isDigit := r >= '0' && r <= '9'
+		isLowerHex := r >= 'a' && r <= 'f'
+		if !isDigit && !isLowerHex {
+			t.Fatalf("MakeRefreshToken() got non-hex character %q", r)
+		}
+	}
+}
