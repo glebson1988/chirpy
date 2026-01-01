@@ -28,6 +28,7 @@ func (s *stubUserStore) SetChirpyRed(ctx context.Context, id uuid.UUID) (databas
 func TestHandlerPolkaWebhooksIgnoresOtherEvents(t *testing.T) {
 	cfg := &apiConfig{
 		userStore: &stubUserStore{},
+		polkaKey:  "polka-key",
 	}
 
 	payload := polkaWebhookRequest{
@@ -39,6 +40,7 @@ func TestHandlerPolkaWebhooksIgnoresOtherEvents(t *testing.T) {
 	}
 
 	req := httptest.NewRequest(http.MethodPost, "/api/polka/webhooks", bytes.NewReader(body))
+	req.Header.Set("Authorization", "ApiKey polka-key")
 	rec := httptest.NewRecorder()
 
 	cfg.handlerPolkaWebhooks(rec, req)
@@ -59,6 +61,7 @@ func TestHandlerPolkaWebhooksUpgradedSuccess(t *testing.T) {
 				return database.User{ID: id}, nil
 			},
 		},
+		polkaKey: "polka-key",
 	}
 
 	payload := polkaWebhookRequest{
@@ -73,6 +76,7 @@ func TestHandlerPolkaWebhooksUpgradedSuccess(t *testing.T) {
 	}
 
 	req := httptest.NewRequest(http.MethodPost, "/api/polka/webhooks", bytes.NewReader(body))
+	req.Header.Set("Authorization", "ApiKey polka-key")
 	rec := httptest.NewRecorder()
 
 	cfg.handlerPolkaWebhooks(rec, req)
@@ -90,6 +94,7 @@ func TestHandlerPolkaWebhooksUserNotFound(t *testing.T) {
 				return database.User{}, sql.ErrNoRows
 			},
 		},
+		polkaKey: "polka-key",
 	}
 
 	payload := polkaWebhookRequest{
@@ -104,6 +109,7 @@ func TestHandlerPolkaWebhooksUserNotFound(t *testing.T) {
 	}
 
 	req := httptest.NewRequest(http.MethodPost, "/api/polka/webhooks", bytes.NewReader(body))
+	req.Header.Set("Authorization", "ApiKey polka-key")
 	rec := httptest.NewRecorder()
 
 	cfg.handlerPolkaWebhooks(rec, req)
@@ -116,6 +122,7 @@ func TestHandlerPolkaWebhooksUserNotFound(t *testing.T) {
 func TestHandlerPolkaWebhooksInvalidUserID(t *testing.T) {
 	cfg := &apiConfig{
 		userStore: &stubUserStore{},
+		polkaKey:  "polka-key",
 	}
 
 	payload := polkaWebhookRequest{
@@ -130,11 +137,40 @@ func TestHandlerPolkaWebhooksInvalidUserID(t *testing.T) {
 	}
 
 	req := httptest.NewRequest(http.MethodPost, "/api/polka/webhooks", bytes.NewReader(body))
+	req.Header.Set("Authorization", "ApiKey polka-key")
 	rec := httptest.NewRecorder()
 
 	cfg.handlerPolkaWebhooks(rec, req)
 
 	if rec.Code != http.StatusBadRequest {
 		t.Fatalf("handlerPolkaWebhooks() status = %d, want %d", rec.Code, http.StatusBadRequest)
+	}
+}
+
+func TestHandlerPolkaWebhooksInvalidAPIKey(t *testing.T) {
+	cfg := &apiConfig{
+		userStore: &stubUserStore{},
+		polkaKey:  "polka-key",
+	}
+
+	payload := polkaWebhookRequest{
+		Event: "user.upgraded",
+		Data: struct {
+			UserID string `json:"user_id"`
+		}{UserID: uuid.New().String()},
+	}
+	body, err := json.Marshal(payload)
+	if err != nil {
+		t.Fatalf("json.Marshal() error = %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/api/polka/webhooks", bytes.NewReader(body))
+	req.Header.Set("Authorization", "ApiKey wrong-key")
+	rec := httptest.NewRecorder()
+
+	cfg.handlerPolkaWebhooks(rec, req)
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("handlerPolkaWebhooks() status = %d, want %d", rec.Code, http.StatusUnauthorized)
 	}
 }

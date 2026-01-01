@@ -103,6 +103,27 @@ func TestGetBearerTokenMissingHeader(t *testing.T) {
 	}
 }
 
+func TestGetAPIKey(t *testing.T) {
+	headers := http.Header{}
+	headers.Set("Authorization", "ApiKey test-key")
+
+	key, err := GetAPIKey(headers)
+	if err != nil {
+		t.Fatalf("GetAPIKey() error = %v", err)
+	}
+	if key != "test-key" {
+		t.Fatalf("GetAPIKey() got %q, want %q", key, "test-key")
+	}
+}
+
+func TestGetAPIKeyMissingHeader(t *testing.T) {
+	headers := http.Header{}
+
+	if _, err := GetAPIKey(headers); err == nil {
+		t.Fatalf("GetAPIKey() expected error for missing header")
+	}
+}
+
 func TestMakeRefreshToken(t *testing.T) {
 	token, err := MakeRefreshToken()
 	if err != nil {

@@ -17,6 +17,7 @@ func main() {
 	dbURL := os.Getenv("DB_URL")
 	platform := os.Getenv("PLATFORM")
 	bearerToken := os.Getenv("BEARER_TOKEN")
+	polkaKey := os.Getenv("POLKA_KEY")
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to DB: %v", err)
@@ -32,6 +33,7 @@ func main() {
 		tokenSecret: bearerToken,
 		tokenStore:  dbQueries,
 		userStore:   dbQueries,
+		polkaKey:    polkaKey,
 	}
 
 	mux := http.NewServeMux()

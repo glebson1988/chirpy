@@ -15,6 +15,7 @@ type apiConfig struct {
 	tokenSecret    string
 	tokenStore     tokenStore
 	userStore      userStore
+	polkaKey       string
 }
 
 type tokenStore interface {
