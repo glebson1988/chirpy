@@ -31,6 +31,7 @@ func main() {
 		platform:    platform,
 		tokenSecret: bearerToken,
 		tokenStore:  dbQueries,
+		userStore:   dbQueries,
 	}
 
 	mux := http.NewServeMux()
@@ -45,6 +46,7 @@ func main() {
 	mux.HandleFunc("POST /api/revoke", cfg.handlerRevoke)
 	mux.HandleFunc("POST /api/users", cfg.handlerCreateUser)
 	mux.HandleFunc("PUT /api/users", cfg.handlerUpdateUser)
+	mux.HandleFunc("POST /api/polka/webhooks", cfg.handlerPolkaWebhooks)
 	mux.HandleFunc("GET /api/chirps/{chirpID}", cfg.handlerGetChirp)
 	mux.HandleFunc("DELETE /api/chirps/{chirpID}", cfg.handlerDeleteChirp)
 
