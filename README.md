@@ -1,6 +1,6 @@
 # Chirpy
 
-Chirpy is a small Go REST API for a microblogging service. It supports user accounts, authenticated chirp creation, refresh tokens, and an admin-only reset endpoint. It also integrates a Polka webhook to upgrade users to Chirpy Red.
+Chirpy is a Go REST API for a microblogging service. It supports user accounts, authenticated chirp creation, refresh tokens, and an admin-only reset endpoint. It also integrates a Polka webhook to upgrade users to Chirpy Red.
 
 ## Why care?
 
